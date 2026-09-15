@@ -32,10 +32,12 @@ class MainActivity : ComponentActivity() {
         }
 
         onBackPressedDispatcher.addCallback(this) {
-            if (webView.canGoBack()) {
-                webView.goBack()
-            } else {
-                finish()
+            // Ask the web page first: if it handled back itself (e.g. a "leave game?" dialog), do nothing
+            webView.evaluateJavascript(
+                "window.__onAndroidBack ? window.__onAndroidBack() === true : false"
+            ) { result ->
+                if (result == "true") return@evaluateJavascript // Web page handled it; do nothing
+                if (webView.canGoBack()) webView.goBack() else finish()
             }
         }
     }
